@@ -80,6 +80,54 @@ export class OrdersUpdate {
 		}
 	}
 
+	@OnSocketEvent(OrdersEvents.TABLE_APPROVED)
+	async orderTableApprovedNotifyWaiter(orderEvent: IOrderEvent) {
+		if (orderEvent.order.users.length === 0) {
+			return;
+		}
+
+		try {
+			const { orderNumber, table, type } = orderEvent.order;
+
+			const text = `
+Заказ <b>${orderNumber}</b> за столом: ${table.name || table.code} с типом <b>${type}</b>.
+Бронирование стола подтверждено официантом.
+`;
+			for (const user of orderEvent.order.users) {
+				await this._bot.telegram.sendMessage(user.telegramId, text, {
+					parse_mode: "HTML"
+				});
+			}
+		}
+		catch (error) {
+			console.error(error);
+		}
+	}
+
+	@OnSocketEvent(OrdersEvents.TABLE_REJECTED)
+	async orderTableRejectedNotifyWaiter(orderEvent: IOrderPtosEvent) {
+		if (orderEvent.order.users.length === 0) {
+			return;
+		}
+
+		try {
+			const { orderNumber, table, type } = orderEvent.order;
+
+			const text = `
+Заказ <b>${orderNumber}</b> за столом: ${table.name || table.code} с типом <b>${type}</b>.
+Бронирование стола отменено официантом.
+`;
+			for (const user of orderEvent.order.users) {
+				await this._bot.telegram.sendMessage(user.telegramId, text, {
+					parse_mode: "HTML"
+				});
+			}
+		}
+		catch (error) {
+			console.error(error);
+		}
+	}
+
 // 	@OnSocketEvent(OrdersEvents.CONFIRM_ORDER)
 // 	async displayOrder(order: IOrder) {
 // 		try {
