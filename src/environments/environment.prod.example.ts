@@ -4,6 +4,7 @@ export const environment = {
 	port: 3001,
 	botToken: "",
 	botDomain: "",
+	wsUrl: "",
 	apiDomain: "",
 	apiUrl: "",
 	appUrl: "",
