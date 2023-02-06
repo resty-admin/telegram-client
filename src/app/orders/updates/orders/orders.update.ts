@@ -43,7 +43,7 @@ export class OrdersUpdate {
 
 			const text = `
 Заказ <b>${orderNumber}</b> за столом: ${table.name || table.code} с типом <b>${type}</b>.
-Блюда: ${orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ', ' : '') + curr.product.name), ''}  отменены официантом.
+Блюда: ${orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ', ' : '') + curr.product.name), ''} отменены официантом.
 `;
 			for (const user of orderEvent.order.users) {
 				await this._bot.telegram.sendMessage(user.telegramId, text, {
