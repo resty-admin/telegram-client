@@ -16,7 +16,6 @@ const text = `Привет 👋🏼
 export class BotUpdate {
 	@Start()
 	async start(context: IStateContext) {
-		console.log('start');
 		if (environment.production) {
 			await context.replyWithSticker(STICKERS.hello);
 		}
