@@ -18,7 +18,7 @@ export class OrdersUpdate {
 		const { orderNumber, table, type } = orderEvent.order;
 
 		const text = `
-Заказ <b>${orderNumber}</b> за столом: ${table.name || table.code} с типом <b>${type}</b> отменен. 
+Замовлення <b>${orderNumber}</b> за столом: ${table.name || table.code} з типом <b>${type}</b> скасовано. 
 `;
 		for (const user of orderEvent.order.users) {
 			try {
@@ -40,7 +40,7 @@ export class OrdersUpdate {
 		const { orderNumber, table, type } = orderEvent.order;
 
 		const text = `
-Заказ <b>${orderNumber}</b> за столом: ${table.name || table.code} с типом <b>${type}</b>.
+Замовлення <b>${orderNumber}</b> за столом: ${table.name || table.code} з типом <b>${type}</b>.
 Страви: ${
 			(orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name), "")
 		} скасовані офіціантом.
@@ -65,7 +65,7 @@ export class OrdersUpdate {
 		const { orderNumber, table, type } = orderEvent.order;
 
 		const text = `
-Заказ <b>${orderNumber}</b> за столом: ${table.name || table.code} с типом <b>${type}</b>.
+Замовлення <b>${orderNumber}</b> за столом: ${table.name || table.code} з типом <b>${type}</b>.
 Страви: ${
 			(orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name), "")
 		}  підтверджені офіціантом.
@@ -90,7 +90,7 @@ export class OrdersUpdate {
 		const { orderNumber, table, type } = orderEvent.order;
 
 		const text = `
-Заказ <b>${orderNumber}</b> за столом: ${table.name || table.code} с типом <b>${type}</b>.
+Замовлення <b>${orderNumber}</b> за столом: ${table.name || table.code} з типом <b>${type}</b>.
 Бронювання столу підтверджено офіціантом.
 `;
 		for (const user of orderEvent.order.users) {
@@ -113,7 +113,7 @@ export class OrdersUpdate {
 		const { orderNumber, table, type } = orderEvent.order;
 
 		const text = `
-Заказ <b>${orderNumber}</b> за столом: ${table.name || table.code} с типом <b>${type}</b>.
+Замовлення <b>${orderNumber}</b> за столом: ${table.name || table.code} з типом <b>${type}</b>.
 Бронювання столу скасовано офіціантом.
 `;
 		for (const user of orderEvent.order.users) {
