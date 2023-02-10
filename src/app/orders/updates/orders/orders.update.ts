@@ -5,6 +5,20 @@ import { Telegraf } from "telegraf";
 
 import { IOrderEvent, IOrderPtosEvent } from "../../../shared/interfaces/orders/order-created.interface";
 
+export enum OrderTypeEnum {
+	"RESERVE" = "RESERVE",
+	"PICKUP" = "PICKUP",
+	"IN_PLACE" = "IN_PLACE",
+	"DELIVERY" = "DELIVERY"
+}
+
+const typesText = {
+	[OrderTypeEnum.RESERVE]: "Бронювання",
+	[OrderTypeEnum.PICKUP]: "З собою",
+	[OrderTypeEnum.IN_PLACE]: "У закладі",
+	[OrderTypeEnum.DELIVERY]: "Доставка"
+};
+
 @Update()
 export class OrdersUpdate {
 	constructor(@InjectBot() private readonly _bot: Telegraf) {}
@@ -15,10 +29,10 @@ export class OrdersUpdate {
 			return;
 		}
 
-		const { orderNumber, table, type } = orderEvent.order;
+		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${orderNumber}</b> за столом: ${table.name || table.code} з типом <b>${type}</b> скасовано. 
+Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b> скасовано. 
 `;
 		for (const user of orderEvent.order.users) {
 			try {
@@ -37,10 +51,10 @@ export class OrdersUpdate {
 			return;
 		}
 
-		const { orderNumber, table, type } = orderEvent.order;
+		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${orderNumber}</b> за столом: ${table.name || table.code} з типом <b>${type}</b>.
+Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b>.
 Страви: ${
 			(orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name), "")
 		} скасовані офіціантом.
@@ -62,10 +76,10 @@ export class OrdersUpdate {
 			return;
 		}
 
-		const { orderNumber, table, type } = orderEvent.order;
+		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${orderNumber}</b> за столом: ${table.name || table.code} з типом <b>${type}</b>.
+Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b>.
 Страви: ${
 			(orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name), "")
 		}  підтверджені офіціантом.
@@ -87,10 +101,10 @@ export class OrdersUpdate {
 			return;
 		}
 
-		const { orderNumber, table, type } = orderEvent.order;
+		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${orderNumber}</b> за столом: ${table.name || table.code} з типом <b>${type}</b>.
+Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b>.
 Бронювання столу підтверджено офіціантом.
 `;
 		for (const user of orderEvent.order.users) {
@@ -110,10 +124,10 @@ export class OrdersUpdate {
 			return;
 		}
 
-		const { orderNumber, table, type } = orderEvent.order;
+		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${orderNumber}</b> за столом: ${table.name || table.code} з типом <b>${type}</b>.
+Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b>.
 Бронювання столу скасовано офіціантом.
 `;
 		for (const user of orderEvent.order.users) {
