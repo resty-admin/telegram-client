@@ -45,7 +45,51 @@ export class OrdersUpdate {
 		}
 	}
 
+	@OnSocketEvent(OrdersEvents.APPROVED)
+	async orderApproveNotify(orderEvent: IOrderEvent) {
+		if (orderEvent.order.users.length === 0) {
+			return;
+		}
+
+		const { code, table, type } = orderEvent.order;
+
+		const text = `
+Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b> підтверждено. 
+`;
+		for (const user of orderEvent.order.users) {
+			try {
+				await this._bot.telegram.sendMessage(user.telegramId, text, {
+					parse_mode: "HTML"
+				});
+			} catch (error) {
+				console.error(error);
+			}
+		}
+	}
+
 	@OnSocketEvent(OrdersEvents.REJECTED)
+	async orderRejectNotify(orderEvent: IOrderEvent) {
+		if (orderEvent.order.users.length === 0) {
+			return;
+		}
+
+		const { code, table, type } = orderEvent.order;
+
+		const text = `
+Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b> скасовано. 
+`;
+		for (const user of orderEvent.order.users) {
+			try {
+				await this._bot.telegram.sendMessage(user.telegramId, text, {
+					parse_mode: "HTML"
+				});
+			} catch (error) {
+				console.error(error);
+			}
+		}
+	}
+
+	@OnSocketEvent(OrdersEvents.PTO_REJECTED)
 	async orderRejectedNotifyWaiter(orderEvent: IOrderPtosEvent) {
 		if (orderEvent.order.users.length === 0) {
 			return;
@@ -70,7 +114,7 @@ export class OrdersUpdate {
 		}
 	}
 
-	@OnSocketEvent(OrdersEvents.APPROVED)
+	@OnSocketEvent(OrdersEvents.PTO_APPROVED)
 	async orderApprovedNotifyWaiter(orderEvent: IOrderPtosEvent) {
 		if (orderEvent.order.users.length === 0) {
 			return;
