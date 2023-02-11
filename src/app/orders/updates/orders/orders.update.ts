@@ -32,7 +32,7 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b> скасовано. 
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b> скасовано. 
 `;
 		for (const user of orderEvent.order.users) {
 			try {
@@ -54,7 +54,7 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b> підтверждено. 
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b> підтверждено. 
 `;
 		for (const user of orderEvent.order.users) {
 			try {
@@ -76,7 +76,7 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b> скасовано. 
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b> скасовано. 
 `;
 		for (const user of orderEvent.order.users) {
 			try {
@@ -98,7 +98,7 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b>.
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b>.
 Страви: ${
 			(orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name), "")
 		} скасовані офіціантом.
@@ -123,7 +123,7 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b>.
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b>.
 Страви: ${
 			(orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name), "")
 		}  підтверджені офіціантом.
@@ -148,7 +148,7 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b>.
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b>.
 Бронювання столу підтверджено офіціантом.
 `;
 		for (const user of orderEvent.order.users) {
@@ -171,7 +171,7 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> за столом: ${table.name || table.code} з типом <b>${typesText[type]}</b>.
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b>.
 Бронювання столу скасовано офіціантом.
 `;
 		for (const user of orderEvent.order.users) {
