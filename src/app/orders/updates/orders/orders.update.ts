@@ -23,8 +23,32 @@ const typesText = {
 export class OrdersUpdate {
 	constructor(@InjectBot() private readonly _bot: Telegraf) {}
 
-	@OnSocketEvent(OrdersEvents.CANCELED)
-	async orderClosedNotifyWaiter(orderEvent: IOrderEvent) {
+// 	@OnSocketEvent(OrdersEvents.CLOSED)
+// 	async orderClosedNotifyWaiter(orderEvent: IOrderEvent) {
+// 		if (orderEvent.order.users.length === 0) {
+// 			return;
+// 		}
+//
+// 		const { code, table, type } = orderEvent.order;
+//
+// 		const text = `
+// Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
+// 			typesText[type]
+// 		}</b> скасовано.
+// `;
+// 		for (const user of orderEvent.order.users) {
+// 			try {
+// 				await this._bot.telegram.sendMessage(user.telegramId, text, {
+// 					parse_mode: "HTML"
+// 				});
+// 			} catch (error) {
+// 				console.error(error);
+// 			}
+// 		}
+// 	}
+
+	@OnSocketEvent(OrdersEvents.APPROVED)
+	async orderApproveNotify(orderEvent: IOrderEvent) {
 		if (orderEvent.order.users.length === 0) {
 			return;
 		}
@@ -32,7 +56,9 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b> скасовано. 
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
+			typesText[type]
+		}</b> підтверждено. 
 `;
 		for (const user of orderEvent.order.users) {
 			try {
@@ -45,8 +71,8 @@ export class OrdersUpdate {
 		}
 	}
 
-	@OnSocketEvent(OrdersEvents.APPROVED)
-	async orderApproveNotify(orderEvent: IOrderEvent) {
+	@OnSocketEvent(OrdersEvents.MANUAL_PAYMENT_SUCCESS)
+	async orderManualPaymentSuccessNotify(orderEvent: IOrderEvent) {
 		if (orderEvent.order.users.length === 0) {
 			return;
 		}
@@ -54,7 +80,10 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b> підтверждено. 
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
+			typesText[type]
+		}</b>.
+Оплату підтверджено. 
 `;
 		for (const user of orderEvent.order.users) {
 			try {
@@ -76,7 +105,9 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b> скасовано. 
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
+			typesText[type]
+		}</b> скасовано. 
 `;
 		for (const user of orderEvent.order.users) {
 			try {
@@ -98,9 +129,9 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b>.
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
 Страви: ${
-			(orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name), "")
+			orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name, '')
 		} скасовані офіціантом.
 `;
 		for (const user of orderEvent.order.users) {
@@ -123,11 +154,12 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b>.
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
 Страви: ${
-			(orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name), "")
-		}  підтверджені офіціантом.
+			orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name, '')
+		} підтверджені офіціантом.
 `;
+
 		for (const user of orderEvent.order.users) {
 			try {
 				await this._bot.telegram.sendMessage(user.telegramId, text, {
@@ -148,7 +180,7 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b>.
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
 Бронювання столу підтверджено офіціантом.
 `;
 		for (const user of orderEvent.order.users) {
@@ -171,7 +203,7 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ''} з типом <b>${typesText[type]}</b>.
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
 Бронювання столу скасовано офіціантом.
 `;
 		for (const user of orderEvent.order.users) {
