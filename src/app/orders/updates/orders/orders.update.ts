@@ -71,6 +71,31 @@ export class OrdersUpdate {
 		}
 	}
 
+	@OnSocketEvent(OrdersEvents.MANUAL_PAYMENT_SUCCESS)
+	async orderManualPaymentSuccessNotify(orderEvent: IOrderEvent) {
+		if (orderEvent.order.users.length === 0) {
+			return;
+		}
+
+		const { code, table, type } = orderEvent.order;
+
+		const text = `
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
+			typesText[type]
+		}</b>.
+Оплату підтверджено. 
+`;
+		for (const user of orderEvent.order.users) {
+			try {
+				await this._bot.telegram.sendMessage(user.telegramId, text, {
+					parse_mode: "HTML"
+				});
+			} catch (error) {
+				console.error(error);
+			}
+		}
+	}
+
 	@OnSocketEvent(OrdersEvents.REJECTED)
 	async orderRejectNotify(orderEvent: IOrderEvent) {
 		if (orderEvent.order.users.length === 0) {
