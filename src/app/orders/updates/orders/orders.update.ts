@@ -23,29 +23,29 @@ const typesText = {
 export class OrdersUpdate {
 	constructor(@InjectBot() private readonly _bot: Telegraf) {}
 
-	@OnSocketEvent(OrdersEvents.CLOSED)
-	async orderClosedNotifyWaiter(orderEvent: IOrderEvent) {
-		if (orderEvent.order.users.length === 0) {
-			return;
-		}
-
-		const { code, table, type } = orderEvent.order;
-
-		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
-			typesText[type]
-		}</b> скасовано. 
-`;
-		for (const user of orderEvent.order.users) {
-			try {
-				await this._bot.telegram.sendMessage(user.telegramId, text, {
-					parse_mode: "HTML"
-				});
-			} catch (error) {
-				console.error(error);
-			}
-		}
-	}
+// 	@OnSocketEvent(OrdersEvents.CLOSED)
+// 	async orderClosedNotifyWaiter(orderEvent: IOrderEvent) {
+// 		if (orderEvent.order.users.length === 0) {
+// 			return;
+// 		}
+//
+// 		const { code, table, type } = orderEvent.order;
+//
+// 		const text = `
+// Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
+// 			typesText[type]
+// 		}</b> скасовано.
+// `;
+// 		for (const user of orderEvent.order.users) {
+// 			try {
+// 				await this._bot.telegram.sendMessage(user.telegramId, text, {
+// 					parse_mode: "HTML"
+// 				});
+// 			} catch (error) {
+// 				console.error(error);
+// 			}
+// 		}
+// 	}
 
 	@OnSocketEvent(OrdersEvents.APPROVED)
 	async orderApproveNotify(orderEvent: IOrderEvent) {
