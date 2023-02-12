@@ -23,7 +23,7 @@ const typesText = {
 export class OrdersUpdate {
 	constructor(@InjectBot() private readonly _bot: Telegraf) {}
 
-	@OnSocketEvent(OrdersEvents.CANCELED)
+	@OnSocketEvent(OrdersEvents.CLOSED)
 	async orderClosedNotifyWaiter(orderEvent: IOrderEvent) {
 		if (orderEvent.order.users.length === 0) {
 			return;
@@ -106,7 +106,7 @@ export class OrdersUpdate {
 		const text = `
 Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
 Страви: ${
-			(orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name), "")
+			orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name, '')
 		} скасовані офіціантом.
 `;
 		for (const user of orderEvent.order.users) {
@@ -131,9 +131,10 @@ export class OrdersUpdate {
 		const text = `
 Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
 Страви: ${
-			(orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name), "")
+			orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name, '')
 		} підтверджені офіціантом.
 `;
+
 		for (const user of orderEvent.order.users) {
 			try {
 				await this._bot.telegram.sendMessage(user.telegramId, text, {
