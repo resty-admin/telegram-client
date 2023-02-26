@@ -1,6 +1,8 @@
+import * as dayjs from "dayjs";
 import { InjectBot, Update } from "nestjs-telegraf";
 import { OrdersEvents } from "src/app/shared/constants";
 import { OnSocketEvent } from "src/app/shared/socket-io";
+import { environment } from "src/environments/environment";
 import { Telegraf } from "telegraf";
 
 import { IOrderEvent, IOrderPtosEvent } from "../../../shared/interfaces/orders/order-created.interface";
@@ -19,56 +21,72 @@ const typesText = {
 	[OrderTypeEnum.DELIVERY]: "Доставка"
 };
 
+export const DAYJS_DISPLAY_FORMAT = "DD MMMM, HH:mm";
+
 @Update()
 export class OrdersUpdate {
 	constructor(@InjectBot() private readonly _bot: Telegraf) {}
 
-// 	@OnSocketEvent(OrdersEvents.CLOSED)
-// 	async orderClosedNotifyWaiter(orderEvent: IOrderEvent) {
-// 		if (orderEvent.order.users.length === 0) {
-// 			return;
-// 		}
-//
-// 		const { code, table, type } = orderEvent.order;
-//
-// 		const text = `
-// Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
-// 			typesText[type]
-// 		}</b> скасовано.
-// `;
-// 		for (const user of orderEvent.order.users) {
-// 			try {
-// 				await this._bot.telegram.sendMessage(user.telegramId, text, {
-// 					parse_mode: "HTML"
-// 				});
-// 			} catch (error) {
-// 				console.error(error);
-// 			}
-// 		}
-// 	}
+	async replyWithOrder(orderEvent: any, customTemplate: string = "") {
+		const { id, code, table, type, place, startDate, pTos, users, employees } = orderEvent;
 
-	@OnSocketEvent(OrdersEvents.APPROVED)
-	async orderApproveNotify(orderEvent: IOrderEvent) {
-		if (orderEvent.order.users.length === 0) {
+		if (users.length === 0) {
 			return;
 		}
 
-		const { code, table, type } = orderEvent.order;
+		const messages = [`<b>Заклад:</b> ${place.name}`, `<b>Заказ:</b> ${code} з типом <b>${typesText[type]}</b>`];
 
-		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
-			typesText[type]
-		}</b> підтверждено. 
-`;
-		for (const user of orderEvent.order.users) {
+		if (table) {
+			messages.push(`<b>Стіл:</b> ${table.name}`);
+		}
+
+		if (startDate) {
+			messages.push(`<b>Дата:</b> ${dayjs(startDate).format(DAYJS_DISPLAY_FORMAT)}`);
+		}
+
+		if ((employees || []).length > 0) {
+			messages.push(`<b>Офіціанти:</b> ${employees.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.name, "")}`);
+		}
+
+		if ((pTos || []).length > 0) {
+			messages.push(`<b>Страви:</b> ${pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name, "")}`);
+		}
+
+		if (customTemplate) {
+			messages.push("---", customTemplate);
+		}
+
+		for (const user of users.filter((user) => user.telegramId)) {
 			try {
-				await this._bot.telegram.sendMessage(user.telegramId, text, {
-					parse_mode: "HTML"
+				await this._bot.telegram.sendMessage(user.telegramId, messages.join("\n"), {
+					parse_mode: "HTML",
+					reply_markup: {
+						inline_keyboard: [
+							[
+								{
+									text: "Перейти",
+									web_app: {
+										url: `${environment.appUrl}/active-orders/${id}`
+									}
+								}
+							]
+						]
+					}
 				});
 			} catch (error) {
 				console.error(error);
 			}
 		}
+	}
+
+	@OnSocketEvent(OrdersEvents.CANCELED)
+	async orderClosedNotifyUser(orderEvent: IOrderEvent) {
+		this.replyWithOrder(orderEvent, "Скасовано");
+	}
+
+	@OnSocketEvent(OrdersEvents.APPROVED)
+	async orderApproveNotify(orderEvent: IOrderEvent) {
+		this.replyWithOrder(orderEvent, "Підтверждено");
 	}
 
 	@OnSocketEvent(OrdersEvents.MANUAL_PAYMENT_SUCCESS)
@@ -80,9 +98,7 @@ export class OrdersUpdate {
 		const { code, table, type } = orderEvent.order;
 
 		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
-			typesText[type]
-		}</b>.
+Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
 Оплату підтверджено. 
 `;
 		for (const user of orderEvent.order.users) {
@@ -98,122 +114,31 @@ export class OrdersUpdate {
 
 	@OnSocketEvent(OrdersEvents.REJECTED)
 	async orderRejectNotify(orderEvent: IOrderEvent) {
-		if (orderEvent.order.users.length === 0) {
-			return;
-		}
-
-		const { code, table, type } = orderEvent.order;
-
-		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${
-			typesText[type]
-		}</b> скасовано. 
-`;
-		for (const user of orderEvent.order.users) {
-			try {
-				await this._bot.telegram.sendMessage(user.telegramId, text, {
-					parse_mode: "HTML"
-				});
-			} catch (error) {
-				console.error(error);
-			}
-		}
+		this.replyWithOrder(orderEvent, "Відхилено");
 	}
 
 	@OnSocketEvent(OrdersEvents.PTO_REJECTED)
 	async orderRejectedNotifyWaiter(orderEvent: IOrderPtosEvent) {
-		if (orderEvent.order.users.length === 0) {
-			return;
-		}
-
-		const { code, table, type } = orderEvent.order;
-
-		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
-Страви: ${
-			orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name, '')
-		} скасовані офіціантом.
-`;
-		for (const user of orderEvent.order.users) {
-			try {
-				await this._bot.telegram.sendMessage(user.telegramId, text, {
-					parse_mode: "HTML"
-				});
-			} catch (error) {
-				console.error(error);
-			}
-		}
+		this.replyWithOrder(orderEvent, "Відхилені офіціантом");
 	}
 
 	@OnSocketEvent(OrdersEvents.PTO_APPROVED)
 	async orderApprovedNotifyWaiter(orderEvent: IOrderPtosEvent) {
-		if (orderEvent.order.users.length === 0) {
-			return;
-		}
-
-		const { code, table, type } = orderEvent.order;
-
-		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
-Страви: ${
-			orderEvent.pTos.reduce((pre, curr) => pre + (pre ? ", " : "") + curr.product.name, '')
-		} підтверджені офіціантом.
-`;
-
-		for (const user of orderEvent.order.users) {
-			try {
-				await this._bot.telegram.sendMessage(user.telegramId, text, {
-					parse_mode: "HTML"
-				});
-			} catch (error) {
-				console.error(error);
-			}
-		}
+		this.replyWithOrder(orderEvent, "Підтверджені офіціантом");
 	}
 
 	@OnSocketEvent(OrdersEvents.TABLE_APPROVED)
 	async orderTableApprovedNotifyWaiter(orderEvent: IOrderEvent) {
-		if (orderEvent.order.users.length === 0) {
-			return;
-		}
-
-		const { code, table, type } = orderEvent.order;
-
-		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
-Бронювання столу підтверджено офіціантом.
-`;
-		for (const user of orderEvent.order.users) {
-			try {
-				await this._bot.telegram.sendMessage(user.telegramId, text, {
-					parse_mode: "HTML"
-				});
-			} catch (error) {
-				console.error(error);
-			}
-		}
+		this.replyWithOrder(orderEvent, "Стіл підтверджено офіціантом");
 	}
 
 	@OnSocketEvent(OrdersEvents.TABLE_REJECTED)
 	async orderTableRejectedNotifyWaiter(orderEvent: IOrderPtosEvent) {
-		if (orderEvent.order.users.length === 0) {
-			return;
-		}
+		this.replyWithOrder(orderEvent, "Стіл відхилено офіціантом");
+	}
 
-		const { code, table, type } = orderEvent.order;
-
-		const text = `
-Замовлення <b>${code}</b> ${table ? `за столом: ${table.name || table.code}` : ""} з типом <b>${typesText[type]}</b>.
-Бронювання столу скасовано офіціантом.
-`;
-		for (const user of orderEvent.order.users) {
-			try {
-				await this._bot.telegram.sendMessage(user.telegramId, text, {
-					parse_mode: "HTML"
-				});
-			} catch (error) {
-				console.error(error);
-			}
-		}
+	@OnSocketEvent(OrdersEvents.MANUAL_PAYMENT_SUCCESS)
+	async manualPaymentSuccess(orderEvent: IOrderPtosEvent) {
+		this.replyWithOrder(orderEvent, "Ручна оплата підтверджена");
 	}
 }
