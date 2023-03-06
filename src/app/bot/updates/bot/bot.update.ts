@@ -19,13 +19,13 @@ export class BotUpdate {
 			await context.replyWithSticker(STICKERS.hello);
 		}
 
-		const endQuery = `${context.startPayload?.includes("?") ? "&" : "?"}from=telegram`;
+		const [placeId, code] = (context.startPayload || "").split("_");
+
+		const url = placeId && code ? `/places/${placeId}/connect-to-table?code=${code}&from=telegram` : "?from=telegram";
 
 		await context.reply(text, {
 			reply_markup: {
-				inline_keyboard: [
-					[{ text: "Почати", web_app: { url: `${environment.appUrl}${context.startPayload}${endQuery}` } }]
-				]
+				inline_keyboard: [[{ text: "Почати", web_app: { url: `${environment.appUrl}${url}` } }]]
 			}
 		});
 	}
