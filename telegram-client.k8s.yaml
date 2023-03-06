@@ -24,6 +24,7 @@ kind: Service
 metadata:
   name: prod-telegram-client-service
 spec:
+  sessionAffinity: ClientIP
   selector:
     app: prod-telegram-client-k8s
   ports:
