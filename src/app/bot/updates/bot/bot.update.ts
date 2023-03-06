@@ -18,9 +18,14 @@ export class BotUpdate {
 		if (environment.production) {
 			await context.replyWithSticker(STICKERS.hello);
 		}
+
+		const [placeId, code] = (context.startPayload || "").split("_");
+
+		const url = placeId && code ? `/places/${placeId}/connect-to-table?code=${code}&from=telegram` : "?from=telegram";
+
 		await context.reply(text, {
 			reply_markup: {
-				inline_keyboard: [[{ text: "Почати", web_app: { url: `${environment.appUrl}?from=telegram` } }]]
+				inline_keyboard: [[{ text: "Почати", web_app: { url: `${environment.appUrl}${url}` } }]]
 			}
 		});
 	}
